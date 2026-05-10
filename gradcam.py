@@ -11,9 +11,9 @@ def get_last_conv_layer_name(model):
     for layer in reversed(model.layers):
         if isinstance(layer, tf.keras.Model):
             for inner_layer in reversed(layer.layers):
-                if len(inner_layer.output_shape) == 4: # Typically Conv2D layers have 4D output
+                if isinstance(inner_layer, tf.keras.layers.Conv2D):
                     return inner_layer.name, layer.name
-        if len(layer.output_shape) == 4:
+        if isinstance(layer, tf.keras.layers.Conv2D):
             return layer.name, None
     raise ValueError("Could not find a convolutional layer.")
 
