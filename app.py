@@ -1,5 +1,6 @@
 import streamlit as st
 import tensorflow as tf
+import keras
 import numpy as np
 from PIL import Image
 import json
@@ -25,7 +26,7 @@ def load_model_and_classes():
     if not os.path.exists(model_path) or not os.path.exists(class_indices_path):
         return None, None
     
-    model = tf.keras.models.load_model(model_path)
+    model = keras.models.load_model(model_path)
     with open(class_indices_path, 'r') as f:
         class_names = json.load(f)
     return model, class_names

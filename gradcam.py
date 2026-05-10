@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import keras
 import cv2
 
 def get_last_conv_layer_name(model):
@@ -9,11 +10,11 @@ def get_last_conv_layer_name(model):
     """
     # Check if the model has a base_model (transfer learning setup)
     for layer in reversed(model.layers):
-        if isinstance(layer, tf.keras.Model):
+        if isinstance(layer, keras.Model):
             for inner_layer in reversed(layer.layers):
-                if isinstance(inner_layer, tf.keras.layers.Conv2D):
+                if isinstance(inner_layer, keras.layers.Conv2D):
                     return inner_layer.name, layer.name
-        if isinstance(layer, tf.keras.layers.Conv2D):
+        if isinstance(layer, keras.layers.Conv2D):
             return layer.name, None
     raise ValueError("Could not find a convolutional layer.")
 
@@ -26,20 +27,20 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name, base_model_name
         base_model = model.get_layer(base_model_name)
         # We need a model that maps from the input of the base model to its last conv layer
         last_conv_layer = base_model.get_layer(last_conv_layer_name)
-        last_conv_layer_model = tf.keras.Model(base_model.inputs, last_conv_layer.output)
+        last_conv_layer_model = keras.Model(base_model.inputs, last_conv_layer.output)
         
         # We also need a model that maps from the last conv layer to the final predictions
         # This includes the layers in the main model AFTER the base model
-        classifier_input = tf.keras.Input(shape=last_conv_layer.output.shape[1:])
+        classifier_input = keras.Input(shape=last_conv_layer.output.shape[1:])
         x = classifier_input
         # Find index of base_model in main model
         start_idx = model.layers.index(base_model) + 1
         for layer in model.layers[start_idx:]:
             x = layer(x)
-        classifier_model = tf.keras.Model(classifier_input, x)
+        classifier_model = keras.Model(classifier_input, x)
     else:
         # Standard flattened model
-        grad_model = tf.keras.models.Model(
+        grad_model = keras.models.Model(
             [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
         )
 
